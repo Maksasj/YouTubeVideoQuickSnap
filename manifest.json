@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Video QuickSnap",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Adds a button to the YouTube player that saves the current video frame as a full-resolution PNG.",
   "permissions": ["downloads"],
   "background": {

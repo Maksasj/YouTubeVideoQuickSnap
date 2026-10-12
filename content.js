@@ -43,6 +43,45 @@
     toast._hideTimer = setTimeout(() => toast.classList.remove("quicksnap-toast--visible"), 2200);
   }
 
+  // Brief thumbnail of the saved frame in the corner of the player.
+  // Hovering keeps it on screen; clicking dismisses it.
+  function showPreview(player, dataUrl, caption) {
+    player.querySelector(".quicksnap-preview")?.remove();
+
+    const card = document.createElement("div");
+    card.className = "quicksnap-preview";
+    const img = document.createElement("img");
+    img.src = dataUrl;
+    img.alt = "Saved frame";
+    const label = document.createElement("div");
+    label.className = "quicksnap-preview-caption";
+    label.textContent = caption;
+    card.append(img, label);
+    player.appendChild(card);
+
+    let hideTimer;
+    const hide = () => {
+      card.classList.remove("quicksnap-preview--visible");
+      setTimeout(() => card.remove(), 300);
+    };
+    const scheduleHide = () => {
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(hide, 2500);
+    };
+
+    card.addEventListener("mouseenter", () => clearTimeout(hideTimer));
+    card.addEventListener("mouseleave", scheduleHide);
+    card.addEventListener("click", (e) => {
+      e.stopPropagation();
+      clearTimeout(hideTimer);
+      hide();
+    });
+
+    // Next frame so the transition runs from the initial (hidden) state.
+    requestAnimationFrame(() => card.classList.add("quicksnap-preview--visible"));
+    scheduleHide();
+  }
+
   function flash(player) {
     const el = document.createElement("div");
     el.className = "quicksnap-flash";
@@ -81,7 +120,7 @@
     try {
       const res = await chrome.runtime.sendMessage({ type: "quicksnap-save", dataUrl, filename });
       if (res?.ok) {
-        showToast(player, `Saved ${width}×${height} PNG`);
+        showPreview(player, dataUrl, `Saved ${width}×${height} PNG`);
       } else {
         showToast(player, `Save failed: ${res?.error || "unknown error"}`, true);
       }
